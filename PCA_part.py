@@ -11,7 +11,7 @@ pca2=PCA(n_components=1)
 
 pca3=PCA(n_components=1)
 
-YS=np.load('./Syngenta/streesalpha3.npz')['data']
+YS=np.load('./streesalpha3.npz')['data']
 print(YS.shape)
 
 X_DH=np.load('./DHcombined_7features_final.npz')['data']
