@@ -486,9 +486,19 @@ layers_dh = [10, 1]
 
 is_training = True
 
-rmse_tr, rmse_te = main_function(H_X, D1_X, Y, layers_dh, batch_size_tr, batch_size_te, learning_rate, max_it, p)
 
-print('train RMSE is %f and test RMSE is %f ' % (rmse_tr, rmse_te))
+rmse_te_all,rmse_tr_all = main_function(H_X, D1_X, Y, layers_dh, batch_size_tr, batch_size_te, learning_rate, max_it, p)
+print('train')
+print(rmse_tr_all)
+print('test')
+print(rmse_te_all)
+
+
+
+print('train RMSE is %f and test RMSE is %f ' %(np.mean(rmse_tr_all),np.mean(rmse_te_all)))
+
+
+
 
 
 
