@@ -224,144 +224,243 @@ def cost_function(Yhat, Y):
 
 
 def main_function(H_X, D1_X, Y, layers_dh, batch_size_tr, batch_size_te, learning_rate, max_it, p):
-    t1 = time.time()
+    t1=time.time()
 
-    m = H_X.shape[0]
+    m=H_X.shape[0]
+    k=10
+    #v=int(p*m)
+    #np.random.seed(100)
+    indices=np.random.permutation(m)
 
-    v = int(p * m)
-    # np.random.seed(100)
-    indices = np.random.permutation(m)
+    #H_X_test=H_X[indices[0:v]]
+    #H_X_training=H_X[indices[v:]]
+    folds_heat = kfold(H_X, indices, k)
+    #print(H_X_test.shape)
+    #print(H_X_training.shape)
+    #D1_X_test=D1_X[indices[0:v]]
+    #D1_X_training=D1_X[indices[v:]]
+    folds_drought1 = kfold(D1_X, indices, k)
+    #print(D1_X_test.shape)
+    #print(D1_X_training.shape)
 
-    H_X_test = H_X[indices[0:v]]
-    H_X_training = H_X[indices[v:]]
+    #D2_X_test = D2_X[indices[0:v]]
+    #D2_X_training = D2_X[indices[v:]]
+    folds_drought2 = kfold(D2_X, indices, k)
+    #print(D2_X_test.shape)
+    #print(D2_X_training.shape)
 
-    print(H_X_test.shape)
-    print(H_X_training.shape)
-    D1_X_test = D1_X[indices[0:v]]
-    D1_X_training = D1_X[indices[v:]]
+    #S_X_test = S_X[indices[0:v]]
+    #S_X_training = S_X[indices[v:]]
+    folds_soil = kfold(S_X, indices, k)
+    #print(S_X_test.shape)
+    #print(S_X_training.shape)
 
-    print(D1_X_test.shape)
-    print(D1_X_training.shape)
+    #Y_training=Y[indices[v:]]
+    #Y_test=Y[indices[0:v]]
+    folds_Y=kfold(Y,indices,k)
+    #print(Y_test.shape)
+    #print(Y_training.shape)
 
-    Y_training = Y[indices[v:]]
-    Y_test = Y[indices[0:v]]
-    print(Y_test.shape)
-    print(Y_training.shape)
 
-    m1 = np.mean(np.squeeze(Y_training))
+    print(len(folds_Y))
 
-    rte = np.sqrt(np.mean((np.squeeze(Y_test) - m1) ** 2))
-    rtr = np.sqrt(np.mean((np.squeeze(Y_training) - m1) ** 2))
-    print('STD of Y train and Y test are  %f %f' % (rtr, rte))
+    rmse_tr_all=[]
+    rmse_te_all=[]
+    for f in range(k):
+        tf.reset_default_graph()
 
-    with tf.device('/cpu:0'):
+        print('**************fold %d ******************' %(f+1))
 
-        H_t = tf.placeholder(dtype=tf.float32, shape=(None, 60 + 16 + 70, 1), name='H_t')
+        new_folds_heat = folds_heat.copy()
 
-        D1_t = tf.placeholder(dtype=tf.float32, shape=(None, 70 + 0, 1), name='D_t')
+        H_X_test = new_folds_heat[f]
 
-        Y_t = tf.placeholder(dtype=tf.float32, shape=[None, 1], name='Y_t')
+        del new_folds_heat[f]
 
-        is_training = tf.placeholder(dtype=tf.bool)
+        H_X_training = np.vstack(new_folds_heat)
 
-        Yhat = main_process(H_t, D1_t, layers_dh, is_training)
 
-        Yhat = tf.identity(Yhat, name='Yhat')
+        new_folds_drought1 = folds_drought1.copy()
 
-        with tf.name_scope('Loss'):
+        D1_X_test = new_folds_drought1[f]
 
-            RMSE, Loss = cost_function(Yhat, Y_t)
+        del new_folds_drought1[f]
 
-        RMSE = tf.identity(RMSE, name='RMSE')
+        D1_X_training = np.vstack(new_folds_drought1)
 
-        with tf.name_scope('train'):
 
-            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        new_folds_drought2 = folds_drought2.copy()
 
-            with tf.control_dependencies(update_ops):
-                train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(Loss)
+        D2_X_test = new_folds_drought2[f]
 
-            sess = tf.Session()
+        del new_folds_drought2[f]
 
-            sess.run(tf.global_variables_initializer())
+        D2_X_training = np.vstack(new_folds_drought2)
 
-        total_parameters = 0
-        for variable in tf.trainable_variables():
-            # shape is an array of tf.Dimension
-            print(variable)
-            shape = variable.get_shape()
-            # print(shape)
-            # print(len(shape))
-            variable_parameters = 1
-            for dim in shape:
-                #   print(dim)
-                variable_parameters *= dim.value
-            # print(variable_parameters)
-            total_parameters += variable_parameters
-        print("total_parameters", total_parameters)
 
-        for i in range(max_it):
+        new_folds_soil = folds_soil.copy()
 
-            I = np.random.randint(H_X_training.shape[0], size=batch_size_tr)
+        S_X_test = new_folds_soil[f]
 
-            batch_H = H_X_training[I]
-            batch_D1 = D1_X_training[I]
-            batch_Y = Y_training[I]
+        del new_folds_soil[f]
 
-            sess.run(train_op, feed_dict={H_t: batch_H, D1_t: batch_D1, Y_t: batch_Y, is_training: True})
+        S_X_training = np.vstack(new_folds_soil)
 
-            if i % 400 == 0:
-                rmse_tr = sess.run(RMSE, feed_dict={H_t: batch_H, D1_t: batch_D1, Y_t: batch_Y,
-                                                    is_training: False})
 
-                I1 = np.random.randint(H_X_test.shape[0], size=batch_size_te)
+        new_folds_Y = folds_Y.copy()
 
-                batch_H_te = H_X_test[I1]
-                batch_D1_te = D1_X_test[I1]
-                batch_Y_te = Y_test[I1]
+        Y_test = new_folds_Y[f]
 
-                rmse_te = sess.run(RMSE,
-                                   feed_dict={H_t: batch_H_te, D1_t: batch_D1_te, Y_t: batch_Y_te,
-                                              is_training: False})
+        del new_folds_Y[f]
 
-                print("Iteration %d , The training RMSE is %f  and test RMSE is %f " % (i, rmse_tr, rmse_te))
+        Y_training = np.vstack(new_folds_Y)
 
-        rmse_tr = sess.run(RMSE,
-                           feed_dict={H_t: H_X_training, D1_t: D1_X_training,
-                                      Y_t: Y_training,
-                                      is_training: False})
+        print(Y_training.shape)
+        print(Y_test.shape)
+        m1=np.mean(np.squeeze(Y_training))
 
-        rmse_te = sess.run(RMSE,
-                           feed_dict={H_t: H_X_test, D1_t: D1_X_test,
-                                      Y_t: Y_test,
-                                      is_training: False})
+        rte=np.sqrt(np.mean((np.squeeze(Y_test)-m1)**2))
+        rtr=np.sqrt(np.mean((np.squeeze(Y_training)-m1)**2))
+        print('STD of Y train and Y test are  %f %f' % (rtr,rte))
 
-    saver = tf.train.Saver()
-    saver.save(sess, './stress_included_soil_heat_drought_encoded_10_alpha3',
-               global_step=i)  # Saving the model for later usage
-    t2 = time.time()
 
-    print("training time", t2 - t1)
-    return rmse_tr, rmse_te
 
+        with tf.device('/cpu:0'):
+
+            H_t = tf.placeholder(dtype=tf.float32, shape=(None, 60+0, 1), name='H_t')
+
+            D1_t = tf.placeholder(dtype=tf.float32, shape=(None, 70+16, 1), name='D_t')
+
+            D2_t = tf.placeholder(dtype=tf.float32, shape=[None, 5], name='D2_t')
+
+            S_t = tf.placeholder(dtype=tf.float32, shape=[None, 14], name='S_t')
+
+            Y_t=tf.placeholder(dtype=tf.float32,shape=[None,1],name='Y_t')
+
+            is_training=tf.placeholder(dtype=tf.bool)
+
+            Yhat = main_process(H_t, D1_t, D2_t, S_t, layers_d, layers_s, layers_dh, layers_dh_s, is_training)
+
+
+            Yhat=tf.identity(Yhat,name='Yhat')
+
+
+            with tf.name_scope('Loss'):
+
+                RMSE,Loss=cost_function(Yhat, Y_t)
+
+
+            RMSE=tf.identity(RMSE,name='RMSE')
+
+
+            with tf.name_scope('train'):
+
+                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+                with tf.control_dependencies(update_ops):
+                    train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(Loss)
+
+                sess = tf.Session()
+
+                sess.run(tf.global_variables_initializer())
+
+            total_parameters = 0
+            for variable in tf.trainable_variables():
+                # shape is an array of tf.Dimension
+                print(variable)
+                shape = variable.get_shape()
+                # print(shape)
+                # print(len(shape))
+                variable_parameters = 1
+                for dim in shape:
+                    #   print(dim)
+                    variable_parameters *= dim.value
+                # print(variable_parameters)
+                total_parameters += variable_parameters
+            print("total_parameters", total_parameters)
+
+            for i in range(max_it):
+
+
+
+                I=np.random.choice(S_X_training.shape[0],size=batch_size_tr)
+
+                batch_H=H_X_training[I]
+                batch_D1=D1_X_training[I]
+                batch_D2=D2_X_training[I]
+                batch_S=S_X_training[I]
+                batch_Y=Y_training[I]
+
+
+                sess.run(train_op,feed_dict={H_t:batch_H,D1_t:batch_D1,D2_t:batch_D2,S_t:batch_S,Y_t:batch_Y,is_training:True})
+
+
+                if i%400==0:
+
+
+                    #rmse_tr=sess.run(RMSE, feed_dict={H_t: batch_H, D1_t: batch_D1, D2_t: batch_D2, S_t: batch_S, Y_t: batch_Y,
+                     #                             is_training: False})
+
+                    I1 = np.random.randint(S_X_test.shape[0], size=batch_size_te)
+
+                    batch_H_te = H_X_test[I1]
+                    batch_D1_te = D1_X_test[I1]
+                    batch_D2_te = D2_X_test[I1]
+                    batch_S_te = S_X_test[I1]
+                    batch_Y_te = Y_test[I1]
+
+                    #rmse_te = sess.run(RMSE,
+                     #                  feed_dict={H_t: batch_H_te, D1_t: batch_D1_te, D2_t: batch_D2_te, S_t: batch_S_te, Y_t: batch_Y_te,
+                      #                            is_training: False})
+
+                    rmse_tr = sess.run(RMSE,
+                                       feed_dict={H_t: H_X_training, D1_t: D1_X_training, D2_t: D2_X_training,
+                                                  S_t: S_X_training,
+                                                  Y_t: Y_training,
+                                                  is_training: False})
+
+                    rmse_te = sess.run(RMSE,
+                                       feed_dict={H_t: H_X_test, D1_t: D1_X_test, D2_t: D2_X_test, S_t: S_X_test,
+                                                  Y_t: Y_test,
+                                                  is_training: False})
+
+                    print("Iteration %d , The training RMSE is %f  and test RMSE is %f " % (i, rmse_tr, rmse_te))
+                    print(H_X_test.shape)
+                    print(D1_X_training.shape)
+            rmse_tr = sess.run(RMSE,
+                               feed_dict={H_t: H_X_training, D1_t: D1_X_training, D2_t: D2_X_training, S_t: S_X_training,
+                                          Y_t: Y_training,
+                                          is_training: False})
+
+            rmse_te = sess.run(RMSE,
+                               feed_dict={H_t: H_X_test, D1_t: D1_X_test, D2_t: D2_X_test, S_t: S_X_test,
+                                          Y_t: Y_test,
+                                          is_training: False})
+
+        saver = tf.train.Saver()
+        saver.save(sess, './Syngenta/kfold/stress_included_soil_drought_entire_encoded_10_alpha3_last_fold'+str(f), global_step=i)  # Saving the model
+
+        
+
+        rmse_te_all.append(rmse_te)
+        rmse_tr_all.append(rmse_tr)
+
+    t2=time.time()
+
+    print("training time",t2-t1)
+    return rmse_te_all,rmse_tr_all
 
 ENV = np.load('./soildata')['data']
 
 
 print(ENV.shape)
-m_e = np.mean(ENV, axis=0, keepdims=True)
-s_e = np.std(ENV, axis=0, keepdims=True)
 
-ENV = (ENV - m_e) / m_e
 
 print(ENV.shape)
 
 H_X = np.load('./Heat_Weather_20interval.npz')['data']  # m-by-n1   n1 is number of heat related weather variables, m is number of observations
 
-m_h = np.mean(H_X, axis=0, keepdims=True)
-s_h = np.std(H_X, axis=0, keepdims=False)
 
-H_X = (H_X - m_h) / s_h
 
 H_X=np.concatenate((H_X,ENV),axis=1)   # adding the soil data to the heat variables to train heat CNN model
 
@@ -370,11 +469,6 @@ H_X=np.concatenate((H_X,ENV),axis=1)   # adding the soil data to the heat variab
 #print(H_X.shape)
 
 D1_X = np.load('./Drought_drought_20interval.npz')['data']  # m-by-n2 #n2 is number of drought related weather variables, m is number of observations
-s_d1 = np.std(D1_X, axis=0, keepdims=False)
-
-m_d1 = np.mean(D1_X, axis=0, keepdims=True)
-
-D1_X = (D1_X - m_d1) / s_d1
 
 H_X=np.concatenate((H_X,D1_X),axis=1)
 
