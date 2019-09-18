@@ -5,6 +5,25 @@ import tensorflow as tf
 import time
 
 
+
+def kfold(data,indice,k):
+
+    #I=np.random.permutation(data.shape[0])
+    if k == 1:
+
+        folds=[data]
+    else:
+        data=data[indice]
+
+        length = int(data.shape[0] / k)  # length of each fold
+        folds = []
+
+        for i in range(k - 1):
+            folds += [data[i * length:(i + 1) * length]]
+        folds += [data[(k - 1) * length:]]
+
+    return folds
+
 def identity_block(X, f, filters, stage, block, is_training):
     epsilon = 0.001
 
