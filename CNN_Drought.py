@@ -245,7 +245,7 @@ def main_function(H_X, D1_X, Y, layers_dh, batch_size_tr, batch_size_te, learnin
     t1=time.time()
 
     m=H_X.shape[0]
-    k=1
+    k=10
     #v=int(p*m)
     #np.random.seed(100)
     indices=np.random.permutation(m)
