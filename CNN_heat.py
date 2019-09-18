@@ -440,9 +440,7 @@ def main_function(H_X, D1_X, Y, layers_dh, batch_size_tr, batch_size_te, learnin
         saver = tf.train.Saver()
         saver.save(sess, './Syngenta/kfold/stress_included_soil_drought_entire_encoded_10_alpha3_last_fold'+str(f), global_step=i)  # Saving the model
 
-        if rmse_te>30 or rmse_tr>30:
-            print('errorrrrrrrrrrrrrrrrrrrr')
-            break
+        
 
         rmse_te_all.append(rmse_te)
         rmse_tr_all.append(rmse_tr)
