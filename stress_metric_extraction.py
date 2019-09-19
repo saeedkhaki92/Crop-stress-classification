@@ -112,14 +112,16 @@ RMSE=graph.get_tensor_by_name('RMSE:0')
 
 
 
+index1=np.random.choice(len(I1),100)
+index2=np.random.choice(len(I1),100)
+index3=np.random.choice(len(I1),100)
 
-x=100
-I1=I1[0:x]
+I1=I1[index1]
 
-I2=I2[len(I2)//2-(x//2):len(I2)//2+(x//2)]
+I2=I2[index2]
 
 
-I3=I3[-x:]
+I3=I3[index3]
 
 
 X_embedded1=encoding.eval(session=sess,feed_dict={H_t:H_X[I1],D1_t:D1_X[I1],Y_t:Y[I1],is_training:False})
