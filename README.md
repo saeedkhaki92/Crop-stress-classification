@@ -47,4 +47,12 @@ Please install the following packages in Python3:
 The data analyzed in this study was provided by Syngenta for 2019 Syngenta Crop Challenge. We accessed
 the data through annual Syngenta Crop Challenge. During the challenge, September 2018 to January 2019,
 the data was open to the public. Researchers who wish to access the data may do so by contacting Syngenta
-directly.
+directly. We are not allowed to share the data due to non-disclosure agreement, sorry.
+
+
+
+
+## Notice
+
+### We have recenetly published a new paper titled <a href="https://arxiv.org/abs/1911.09045" target="_blank">"A CNN-RNN Framework for Crop Yield Prediction"</a> published in <a href="https://www.frontiersin.org/articles/10.3389/fpls.2019.01750/abstract" target="_blank"> Frontiers in Plant Science Journal</a>. This paper predicts corn and soybean yields based on weather, soil and management practices data. Reserachers can use the data from this paper using following <a href="https://github.com/saeedkhaki92/CNN-RNN-Yield-Prediction" target="_blank"> link</a>. We spend a lot of time gathering and cleaning the data from different publicly available sources. Please cite our papers if you use our data or codes. Thanks.
+
