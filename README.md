@@ -1,6 +1,6 @@
 # Crop-stress-classification
 
-This repository contains codes for the paper entitled <a href="https://arxiv.org/abs/1906.00454" target="_blank">"Classification of Crop Tolerance to Heat and Drought: A Deep Convolutional Neural Networks Approach"</a>. The paper was authored by Saeed Khaki, Zahra Khalilzadeh, and Lizhi Wang. In this paper, we proposed an unsupervised approach for classifying crops as either tolerant or susceptible to heat stress, drought stress, and combined drought and heat stress.
+This repository contains codes for the paper entitled <a href="https://doi.org/10.3390/agronomy9120833" target="_blank">"Classification of Crop Tolerance to Heat and Drought: A Deep Convolutional Neural Networks Approach"</a> published in the Agronomy Journal. The paper was authored by Saeed Khaki, Zahra Khalilzadeh, and Lizhi Wang. In this paper, we proposed an unsupervised approach for classifying crops as either tolerant or susceptible to heat stress, drought stress, and combined drought and heat stress.
 
 ### Please cite our paper if you use our code. Thanks!
 ```
