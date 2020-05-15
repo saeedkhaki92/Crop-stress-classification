@@ -4,12 +4,21 @@ This repository contains codes for the paper entitled <a href="https://doi.org/1
 
 ### Please cite our paper if you use our code. Thanks!
 ```
-@article{khaki2019classification,
-  title={Classification of Crop Tolerance to Heat and Drought: A Deep Convolutional Neural Networks Approach},
-  author={Khaki, Saeed and Khalilzadeh, Zahra},
-  journal={arXiv preprint arXiv:1906.00454},
-  year={2019}
+@article{Khaki_2019,
+   title={Classification of Crop Tolerance to Heat and Drought—A Deep Convolutional Neural Networks Approach},
+   volume={9},
+   ISSN={2073-4395},
+   url={http://dx.doi.org/10.3390/agronomy9120833},
+   DOI={10.3390/agronomy9120833},
+   number={12},
+   journal={Agronomy},
+   publisher={MDPI AG},
+   author={Khaki, Saeed and Khalilzadeh, Zahra and Wang, Lizhi},
+   year={2019},
+   month={Dec},
+   pages={833}
 }
+
 
 ```
 
